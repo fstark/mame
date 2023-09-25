@@ -398,6 +398,155 @@ u32 z80_disassembler::opcode_alignment() const
 	return 1;
 }
 
+static const char *symbols[65536];
+static const char *ioports[256];
+
+const char *symbol_or_adrs( uint16_t adrs )
+{
+	static bool inited;
+	if (!inited)
+	{
+symbols[0x0620]="ABORT";
+symbols[0x061C]="ABTTST";
+symbols[0x0FDE]="BEEP";
+symbols[0x0A1B]="BOOT";
+symbols[0x0241]="CALPHA";
+symbols[0x018F]="CBS";
+symbols[0x019C]="CCR";
+symbols[0x01AA]="CESC";
+symbols[0x0205]="CGRAPH";
+symbols[0x07AC]="CIPI";
+symbols[0x0B2D]="CLEARESC";
+symbols[0x01AF]="CLF";
+symbols[0x0FD0]="CLICK";
+symbols[0x065A]="CLKID";
+symbols[0xFD7E]="CMDPTR";
+symbols[0x07E1]="CO";
+symbols[0x07E3]="COIX";
+symbols[0x0B36]="CONTROL";
+symbols[0x0B40]="CONTROL1";
+symbols[0x0053]="CPUERR";
+symbols[0x01DB]="CSLASH";
+symbols[0x01FA]="CSPC";
+symbols[0x0086]="CTRLLF";
+symbols[0xFD22]="CURSOR";
+symbols[0xFD23]="CURSORCOL";
+symbols[0xFD22]="CURSORROW";
+symbols[0x067A]="DELAY";
+symbols[0x0865]="DISKOP";
+symbols[0x0ABA]="DISPLY";
+symbols[0x072C]="DISP_HL";
+symbols[0x09AF]="DLY2MS";
+symbols[0x00EC]="DMACBP";
+symbols[0x0698]="DSH";
+symbols[0x06AC]="DSH1";
+symbols[0x00E2]="DSPBCA";
+symbols[0x00E3]="DSPBWR";
+symbols[0xFD76]="DSPCYC";
+symbols[0x00F6]="DSPINT";
+symbols[0x0184]="ECHO";
+symbols[0x090E]="ERROR";
+symbols[0x0BBF]="ESCAPE";
+symbols[0xFE00]="FILBUF";
+symbols[0x0200]="FILSIZ";
+symbols[0xFD81]="FLGCMD";
+symbols[0xFD80]="FLGLOP";
+symbols[0x0997]="FPREAD";
+symbols[0x09A0]="FPWRIT";
+symbols[0x00E0]="FPYBCA";
+symbols[0x00E1]="FPYBWR";
+symbols[0x00F7]="FPYINT";
+symbols[0x062F]="GOMON";
+symbols[0x0A6E]="GOTERM";
+symbols[0xFD1F]="HOMES";
+symbols[0x0D73]="IEND";
+symbols[0x0021]="INIT";
+symbols[0x0CED]="INTF4";
+symbols[0x0D7A]="INTF6";
+symbols[0x0DB6]="IOINITDATA";
+symbols[0xFD78]="KEYCOD";
+symbols[0xFD79]="KEYFLG";
+symbols[0x0E4A]="KEYTBL";
+symbols[0x01BA]="LFRET";
+symbols[0x002D]="LOOP_IODATA";
+symbols[0x0025]="LOOP_IOREG";
+symbols[0xFD82]="LSTATE";
+symbols[0x0711]="MAPMEM";
+symbols[0x0714]="MAPMEMLOOP";
+symbols[0x03D9]="MEMERR";
+symbols[0x0F53]="MEMMAP8TOF";
+symbols[0x0F4F]="MEMMAPFTO8";
+symbols[0x0104]="MNTR";
+symbols[0x0126]="MNTR2";
+symbols[0xFD20]="MTRCNT";
+symbols[0x0B17]="NEXTCOL";
+symbols[0x0F66]="NODISK_MSG";
+symbols[0x0F84]="NOSYS_MSG";
+symbols[0x0054]="OTHER_TEST";
+symbols[0x003C]="PASSVALUE";
+symbols[0x06CB]="RDCMOS";
+symbols[0x0AA5]="READ_FDC_REG";
+symbols[0x0035]="REGTEST";
+symbols[0x0000]="RESET";
+symbols[0xFD8A]="SAVCMD";
+symbols[0xFD86]="SAVDE";
+symbols[0x0A8F]="SEND_FDC_CMD";
+symbols[0x0B18]="SETCOL";
+symbols[0x00FC]="SFLPY";
+symbols[0xFD7A]="SHLOCK";
+symbols[0x0740]="SOUND";
+symbols[0x07DF]="SPACE";
+symbols[0xFE00]="STACK_BASE";
+symbols[0x0B2E]="STOREESC";
+symbols[0x0F97]="TERMINAL_MSG";
+symbols[0x0825]="TERMNL";
+symbols[0x0F57]="UNITSEQ";
+symbols[0x079A]="XXXKEYSTS";
+
+
+ioports[0x00E0]="FPYBCA";
+ioports[0x00E1]="FPYBWR";
+ioports[0x00E2]="DSPBCA";
+ioports[0x00E3]="DSPBWR";
+ioports[0x00E4]="STDBCA";
+ioports[0x00E5]="STDBWR";
+ioports[0x00E6]="SIOBCA";
+ioports[0x00E7]="SIOBWR";
+ioports[0x00E8]="DMACSR";
+ioports[0x00E9]="DMAWRR";
+ioports[0x00EA]="DMAWSM";
+ioports[0x00EB]="DMAWMR";
+ioports[0x00EC]="DMACBP";
+ioports[0x00ED]="DMATMP";
+ioports[0x00EE]="SDSPY";
+ioports[0x00EF]="DMAWAM";
+ioports[0x00F0]="DCOMM";
+ioports[0x00F1]="SCOMM";
+ioports[0x00F2]="DPRTR";
+ioports[0x00F3]="SPRTR";
+ioports[0x00F4]="BAUDC";
+ioports[0x00F5]="BAUDP";
+ioports[0x00F6]="DSPINT";
+ioports[0x00F7]="FPYINT";
+ioports[0x00F8]="DPIOA";
+ioports[0x00F9]="SPIOA";
+ioports[0x00FA]="DPIOB";
+ioports[0x00FB]="SPIOB";
+ioports[0x00FC]="SFLPY";
+ioports[0x00FD]="DFLPY";
+ioports[0x00FE]="DDSPY";
+ioports[0x00FF]="DMAP";
+		inited = true;
+	}
+
+	if (symbols[adrs])
+		return symbols[adrs];
+
+	static char buffer[1024];
+	sprintf( buffer, "$%04X", adrs );
+	return buffer;
+}
+
 offs_t z80_disassembler::disassemble(std::ostream &stream, offs_t pc, const data_buffer &opcodes, const data_buffer &params)
 {
 	s8 offset = 0;
@@ -459,6 +608,16 @@ offs_t z80_disassembler::disassemble(std::ostream &stream, offs_t pc, const data
 		break;
 	}
 
+	if (symbols[pc])
+	{
+		util::stream_format(stream, "%s:", symbols[pc] );
+		int i = 12-strlen( symbols[pc] );
+		while (i-->0)
+			util::stream_format(stream, " " );
+	}
+	else
+		util::stream_format(stream, "             " );
+
 	uint32_t flags = s_flags[d->mnemonic];
 	if( d->arguments )
 	{
@@ -472,7 +631,7 @@ offs_t z80_disassembler::disassemble(std::ostream &stream, offs_t pc, const data
 				util::stream_format(stream, "$%02x", op );
 				break;
 			case 'A':
-				util::stream_format(stream, "$%04X", params.r16(pos) );
+				util::stream_format(stream, "%s", symbol_or_adrs(params.r16(pos)) );
 				pos += 2;
 				if (src != d->arguments)
 					flags |= STEP_COND;
@@ -481,22 +640,28 @@ offs_t z80_disassembler::disassemble(std::ostream &stream, offs_t pc, const data
 				util::stream_format(stream, "$%02X", params.r8(pos++) );
 				break;
 			case 'N':   /* Immediate 16 bit */
-				util::stream_format(stream, "$%04X", params.r16(pos) );
+				util::stream_format(stream, "%s", symbol_or_adrs(params.r16(pos)) );
 				pos += 2;
 				break;
 			case 'O':   /* Offset relative to PC */
-				util::stream_format(stream, "$%04X", (pc + s8(params.r8(pos++)) + 2) & 0xffff);
+				util::stream_format(stream, "%s", 
+				symbol_or_adrs(
+					(pc + s8(params.r8(pos++)) + 2) & 0xffff)
+				);
 				if (src != d->arguments)
 					flags |= STEP_COND;
 				break;
 			case 'P':   /* Port number */
-				util::stream_format(stream, "$%02X", params.r8(pos++) );
+				if (ioports[params.r8(pos)])
+					util::stream_format(stream, "%s", ioports[params.r8(pos++)] );
+				else
+					util::stream_format(stream, "$%02X", params.r8(pos++) );
 				break;
 			case 'V':   /* Restart vector */
 				util::stream_format(stream, "$%02X", op & 0x38 );
 				break;
 			case 'W':   /* Memory address word */
-				util::stream_format(stream, "$%04X", params.r16(pos) );
+				util::stream_format(stream, "%s", symbol_or_adrs(params.r16(pos)) );
 				pos += 2;
 				break;
 			case 'X':
